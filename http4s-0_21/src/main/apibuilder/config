@@ -1,0 +1,8 @@
+code:
+  flow:
+    github:
+      version: 0.2.53
+      generators:
+        - generator: http4s_0_20
+          files:
+            - '*Client.scala'

@@ -1569,12 +1569,14 @@ import io.circe.syntax._
     def users: Users[F] = Users
 
     object Blobs extends Blobs[F] {
+      import Client._
+
       override def getBySha(
         owner: String,
         repo: String,
         sha: String,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.Blob] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Blob] = {
         val urlPath = Seq("repos", owner, repo, "git", "blobs", sha)
 
         _executeRequest[Unit, io.flow.github.v0.models.Blob]("GET", path = urlPath, requestHeaders = requestHeaders) {
@@ -1589,7 +1591,7 @@ import io.circe.syntax._
         repo: String,
         blobForm: io.flow.github.v0.models.BlobForm,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.BlobCreated] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.BlobCreated] = {
         val urlPath = Seq("repos", owner, repo, "git", "blobs")
 
         val (payload, formPayload) = (Some(blobForm), None)
@@ -1597,25 +1599,31 @@ import io.circe.syntax._
         _executeRequest[io.flow.github.v0.models.BlobForm, io.flow.github.v0.models.BlobCreated]("POST", path = urlPath, body = payload, formBody = formPayload, requestHeaders = requestHeaders) {
           case r if r.status.code == 201 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.BlobCreated]("io.flow.github.v0.models.BlobCreated", r)
           case r if r.status.code == 404 => Sync[F].raiseError(new io.flow.github.v0.errors.UnitResponse(r.status.code))
-          case r if r.status.code == 422 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r).flatMap(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
+          case r if r.status.code == 422 =>
+            val unprocessable = _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r)
+            ev.flatMap(unprocessable)(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
           case r => Sync[F].raiseError(new io.flow.github.v0.errors.FailedRequest(r.status.code, s"Unsupported response code[${r.status.code}]. Expected: 201, 404, 422"))
         }
       }
     }
 
     object Commits extends Commits[F] {
+      import Client._
+
       override def getBySha(
         owner: String,
         repo: String,
         sha: String,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.Commit] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Commit] = {
         val urlPath = Seq("repos", owner, repo, "git", "commits", sha)
 
         _executeRequest[Unit, io.flow.github.v0.models.Commit]("GET", path = urlPath, requestHeaders = requestHeaders) {
           case r if r.status.code == 200 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.Commit]("io.flow.github.v0.models.Commit", r)
           case r if r.status.code == 404 => Sync[F].raiseError(new io.flow.github.v0.errors.UnitResponse(r.status.code))
-          case r if r.status.code == 422 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r).flatMap(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
+          case r if r.status.code == 422 =>
+            val unprocessable = _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r)
+            ev.flatMap(unprocessable)(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
           case r => Sync[F].raiseError(new io.flow.github.v0.errors.FailedRequest(r.status.code, s"Unsupported response code[${r.status.code}]. Expected: 200, 404, 422"))
         }
       }
@@ -1625,7 +1633,7 @@ import io.circe.syntax._
         repo: String,
         commitForm: io.flow.github.v0.models.CommitForm,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.CommitResponse] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.CommitResponse] = {
         val urlPath = Seq("repos", owner, repo, "git", "commits")
 
         val (payload, formPayload) = (Some(commitForm), None)
@@ -1633,19 +1641,23 @@ import io.circe.syntax._
         _executeRequest[io.flow.github.v0.models.CommitForm, io.flow.github.v0.models.CommitResponse]("POST", path = urlPath, body = payload, formBody = formPayload, requestHeaders = requestHeaders) {
           case r if r.status.code == 201 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.CommitResponse]("io.flow.github.v0.models.CommitResponse", r)
           case r if r.status.code == 404 => Sync[F].raiseError(new io.flow.github.v0.errors.UnitResponse(r.status.code))
-          case r if r.status.code == 422 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r).flatMap(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
+          case r if r.status.code == 422 =>
+            val unprocessable = _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r)
+            ev.flatMap(unprocessable)(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
           case r => Sync[F].raiseError(new io.flow.github.v0.errors.FailedRequest(r.status.code, s"Unsupported response code[${r.status.code}]. Expected: 201, 404, 422"))
         }
       }
     }
 
     object Contents extends Contents[F] {
+      import Client._
+
       override def getReadme(
         owner: String,
         repo: String,
         ref: String = "main",
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.Contents] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Contents] = {
         val urlPath = Seq("repos", owner, repo, "readme")
 
         val queryParameters = Seq(
@@ -1666,7 +1678,7 @@ import io.circe.syntax._
         path: String,
         ref: String = "main",
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.Contents] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Contents] = {
         val urlPath = Seq("repos", owner, repo, "contents", path)
 
         val queryParameters = Seq(
@@ -1683,11 +1695,13 @@ import io.circe.syntax._
     }
 
     object Hooks extends Hooks[F] {
+      import Client._
+
       override def get(
         owner: String,
         repo: String,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[Seq[io.flow.github.v0.models.Hook]] = {
+      )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.Hook]] = {
         val urlPath = Seq("repos", owner, repo, "hooks")
 
         _executeRequest[Unit, Seq[io.flow.github.v0.models.Hook]]("GET", path = urlPath, requestHeaders = requestHeaders) {
@@ -1702,7 +1716,7 @@ import io.circe.syntax._
         repo: String,
         id: Long,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.Hook] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Hook] = {
         val urlPath = Seq("repos", owner, repo, "hooks", id.toString)
 
         _executeRequest[Unit, io.flow.github.v0.models.Hook]("GET", path = urlPath, requestHeaders = requestHeaders) {
@@ -1717,7 +1731,7 @@ import io.circe.syntax._
         repo: String,
         hookForm: io.flow.github.v0.models.HookForm,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.Hook] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Hook] = {
         val urlPath = Seq("repos", owner, repo, "hooks")
 
         val (payload, formPayload) = (Some(hookForm), None)
@@ -1725,7 +1739,9 @@ import io.circe.syntax._
         _executeRequest[io.flow.github.v0.models.HookForm, io.flow.github.v0.models.Hook]("POST", path = urlPath, body = payload, formBody = formPayload, requestHeaders = requestHeaders) {
           case r if r.status.code == 201 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.Hook]("io.flow.github.v0.models.Hook", r)
           case r if r.status.code == 404 => Sync[F].raiseError(new io.flow.github.v0.errors.UnitResponse(r.status.code))
-          case r if r.status.code == 422 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r).flatMap(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
+          case r if r.status.code == 422 =>
+            val unprocessable = _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r)
+            ev.flatMap(unprocessable)(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
           case r => Sync[F].raiseError(new io.flow.github.v0.errors.FailedRequest(r.status.code, s"Unsupported response code[${r.status.code}]. Expected: 201, 404, 422"))
         }
       }
@@ -1735,7 +1751,7 @@ import io.circe.syntax._
         repo: String,
         id: Long,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[Unit] = {
+      )(implicit ev: Concurrent[F]): F[Unit] = {
         val urlPath = Seq("repos", owner, repo, "hooks", id.toString)
 
         _executeRequest[Unit, Unit]("DELETE", path = urlPath, requestHeaders = requestHeaders) {
@@ -1747,12 +1763,14 @@ import io.circe.syntax._
     }
 
     object PullRequests extends PullRequests[F] {
+      import Client._
+
       override def post(
         owner: String,
         repo: String,
         pullRequestForm: io.flow.github.v0.models.PullRequestForm,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.PullRequest] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.PullRequest] = {
         val urlPath = Seq("repos", owner, repo, "pulls")
 
         val (payload, formPayload) = (Some(pullRequestForm), None)
@@ -1760,7 +1778,9 @@ import io.circe.syntax._
         _executeRequest[io.flow.github.v0.models.PullRequestForm, io.flow.github.v0.models.PullRequest]("POST", path = urlPath, body = payload, formBody = formPayload, requestHeaders = requestHeaders) {
           case r if r.status.code == 201 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.PullRequest]("io.flow.github.v0.models.PullRequest", r)
           case r if r.status.code == 404 => Sync[F].raiseError(new io.flow.github.v0.errors.UnitResponse(r.status.code))
-          case r if r.status.code == 422 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r).flatMap(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
+          case r if r.status.code == 422 =>
+            val unprocessable = _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r)
+            ev.flatMap(unprocessable)(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
           case r => Sync[F].raiseError(new io.flow.github.v0.errors.FailedRequest(r.status.code, s"Unsupported response code[${r.status.code}]. Expected: 201, 404, 422"))
         }
       }
@@ -1770,7 +1790,7 @@ import io.circe.syntax._
         repo: String,
         page: Long = 1L,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[Seq[io.flow.github.v0.models.PullRequest]] = {
+      )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.PullRequest]] = {
         val urlPath = Seq("repos", owner, repo, "pulls")
 
         val queryParameters = Seq(
@@ -1786,11 +1806,13 @@ import io.circe.syntax._
     }
 
     object Refs extends Refs[F] {
+      import Client._
+
       override def get(
         owner: String,
         repo: String,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[Seq[io.flow.github.v0.models.Ref]] = {
+      )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.Ref]] = {
         val urlPath = Seq("repos", owner, repo, "git", "refs")
 
         _executeRequest[Unit, Seq[io.flow.github.v0.models.Ref]]("GET", path = urlPath, requestHeaders = requestHeaders) {
@@ -1805,7 +1827,7 @@ import io.circe.syntax._
         repo: String,
         ref: String,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.Ref] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Ref] = {
         val urlPath = Seq("repos", owner, repo, "git", "refs", ref)
 
         _executeRequest[Unit, io.flow.github.v0.models.Ref]("GET", path = urlPath, requestHeaders = requestHeaders) {
@@ -1820,7 +1842,7 @@ import io.circe.syntax._
         repo: String,
         refForm: io.flow.github.v0.models.RefForm,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.Ref] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Ref] = {
         val urlPath = Seq("repos", owner, repo, "git", "refs")
 
         val (payload, formPayload) = (Some(refForm), None)
@@ -1828,7 +1850,9 @@ import io.circe.syntax._
         _executeRequest[io.flow.github.v0.models.RefForm, io.flow.github.v0.models.Ref]("POST", path = urlPath, body = payload, formBody = formPayload, requestHeaders = requestHeaders) {
           case r if r.status.code == 201 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.Ref]("io.flow.github.v0.models.Ref", r)
           case r if r.status.code == 404 => Sync[F].raiseError(new io.flow.github.v0.errors.UnitResponse(r.status.code))
-          case r if r.status.code == 422 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r).flatMap(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
+          case r if r.status.code == 422 =>
+            val unprocessable = _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r)
+            ev.flatMap(unprocessable)(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
           case r => Sync[F].raiseError(new io.flow.github.v0.errors.FailedRequest(r.status.code, s"Unsupported response code[${r.status.code}]. Expected: 201, 404, 422"))
         }
       }
@@ -1839,7 +1863,7 @@ import io.circe.syntax._
         ref: String,
         refUpdateForm: io.flow.github.v0.models.RefUpdateForm,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.Ref] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Ref] = {
         val urlPath = Seq("repos", owner, repo, "git", "refs", ref)
 
         val (payload, formPayload) = (Some(refUpdateForm), None)
@@ -1847,13 +1871,17 @@ import io.circe.syntax._
         _executeRequest[io.flow.github.v0.models.RefUpdateForm, io.flow.github.v0.models.Ref]("PUT", path = urlPath, body = payload, formBody = formPayload, requestHeaders = requestHeaders) {
           case r if r.status.code == 201 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.Ref]("io.flow.github.v0.models.Ref", r)
           case r if r.status.code == 404 => Sync[F].raiseError(new io.flow.github.v0.errors.UnitResponse(r.status.code))
-          case r if r.status.code == 422 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r).flatMap(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
+          case r if r.status.code == 422 =>
+            val unprocessable = _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r)
+            ev.flatMap(unprocessable)(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
           case r => Sync[F].raiseError(new io.flow.github.v0.errors.FailedRequest(r.status.code, s"Unsupported response code[${r.status.code}]. Expected: 201, 404, 422"))
         }
       }
     }
 
     object Repositories extends Repositories[F] {
+      import Client._
+
       override def getUserAndRepos(
         page: Long = 1L,
         visibility: io.flow.github.v0.models.Visibility = io.flow.github.v0.models.Visibility.All,
@@ -1862,7 +1890,7 @@ import io.circe.syntax._
         sort: String = "full_name",
         direction: String = "asc",
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[Seq[io.flow.github.v0.models.Repository]] = {
+      )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.Repository]] = {
         val urlPath = Seq("user", "repos")
 
         val queryParameters = Seq(
@@ -1888,7 +1916,7 @@ import io.circe.syntax._
         sort: String = "full_name",
         direction: String = "asc",
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[Seq[io.flow.github.v0.models.Repository]] = {
+      )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.Repository]] = {
         val urlPath = Seq("users", username, "repos")
 
         val queryParameters = Seq(
@@ -1912,7 +1940,7 @@ import io.circe.syntax._
         sort: String = "full_name",
         direction: String = "asc",
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[Seq[io.flow.github.v0.models.Repository]] = {
+      )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.Repository]] = {
         val urlPath = Seq("orgs", org, "repos")
 
         val queryParameters = Seq(
@@ -1931,13 +1959,15 @@ import io.circe.syntax._
     }
 
     object Tags extends Tags[F] {
+      import Client._
+
       override def getTags(
         owner: String,
         repo: String,
         page: Long = 1L,
         perPage: Long = 30L,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[Seq[io.flow.github.v0.models.TagSummary]] = {
+      )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.TagSummary]] = {
         val urlPath = Seq("repos", owner, repo, "tags")
 
         val queryParameters = Seq(
@@ -1957,7 +1987,7 @@ import io.circe.syntax._
         repo: String,
         sha: String,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.Tag] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Tag] = {
         val urlPath = Seq("repos", owner, repo, "tags", sha)
 
         _executeRequest[Unit, io.flow.github.v0.models.Tag]("GET", path = urlPath, requestHeaders = requestHeaders) {
@@ -1972,7 +2002,7 @@ import io.circe.syntax._
         repo: String,
         tagForm: io.flow.github.v0.models.TagForm,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.Tag] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Tag] = {
         val urlPath = Seq("repos", owner, repo, "git", "tags")
 
         val (payload, formPayload) = (Some(tagForm), None)
@@ -1980,19 +2010,23 @@ import io.circe.syntax._
         _executeRequest[io.flow.github.v0.models.TagForm, io.flow.github.v0.models.Tag]("POST", path = urlPath, body = payload, formBody = formPayload, requestHeaders = requestHeaders) {
           case r if r.status.code == 201 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.Tag]("io.flow.github.v0.models.Tag", r)
           case r if r.status.code == 404 => Sync[F].raiseError(new io.flow.github.v0.errors.UnitResponse(r.status.code))
-          case r if r.status.code == 422 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r).flatMap(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
+          case r if r.status.code == 422 =>
+            val unprocessable = _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r)
+            ev.flatMap(unprocessable)(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
           case r => Sync[F].raiseError(new io.flow.github.v0.errors.FailedRequest(r.status.code, s"Unsupported response code[${r.status.code}]. Expected: 201, 404, 422"))
         }
       }
     }
 
     object Trees extends Trees[F] {
+      import Client._
+
       override def post(
         owner: String,
         repo: String,
         createTreeForm: io.flow.github.v0.models.CreateTreeForm,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.CreateTreeResponse] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.CreateTreeResponse] = {
         val urlPath = Seq("repos", owner, repo, "git", "trees")
 
         val (payload, formPayload) = (Some(createTreeForm), None)
@@ -2000,16 +2034,20 @@ import io.circe.syntax._
         _executeRequest[io.flow.github.v0.models.CreateTreeForm, io.flow.github.v0.models.CreateTreeResponse]("POST", path = urlPath, body = payload, formBody = formPayload, requestHeaders = requestHeaders) {
           case r if r.status.code == 201 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.CreateTreeResponse]("io.flow.github.v0.models.CreateTreeResponse", r)
           case r if r.status.code == 404 => Sync[F].raiseError(new io.flow.github.v0.errors.UnitResponse(r.status.code))
-          case r if r.status.code == 422 => _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r).flatMap(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
+          case r if r.status.code == 422 =>
+            val unprocessable = _root_.io.flow.github.v0.Client.parseJson[F, io.flow.github.v0.models.UnprocessableEntity]("io.flow.github.v0.models.UnprocessableEntity", r)
+            ev.flatMap(unprocessable)(body => Sync[F].raiseError(new io.flow.github.v0.errors.UnprocessableEntityResponse(r.headers, r.status.code, None, body)))
           case r => Sync[F].raiseError(new io.flow.github.v0.errors.FailedRequest(r.status.code, s"Unsupported response code[${r.status.code}]. Expected: 201, 404, 422"))
         }
       }
     }
 
     object UserEmails extends UserEmails[F] {
+      import Client._
+
       override def get(
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[Seq[io.flow.github.v0.models.UserEmail]] = {
+      )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.UserEmail]] = {
         val urlPath = Seq("user", "emails")
 
         _executeRequest[Unit, Seq[io.flow.github.v0.models.UserEmail]]("GET", path = urlPath, requestHeaders = requestHeaders) {
@@ -2021,9 +2059,11 @@ import io.circe.syntax._
     }
 
     object Users extends Users[F] {
+      import Client._
+
       override def getUser(
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[io.flow.github.v0.models.User] = {
+      )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.User] = {
         val urlPath = Seq("user")
 
         _executeRequest[Unit, io.flow.github.v0.models.User]("GET", path = urlPath, requestHeaders = requestHeaders) {
@@ -2037,7 +2077,7 @@ import io.circe.syntax._
         page: Long = 1L,
         perPage: _root_.scala.Option[Long] = None,
         requestHeaders: Seq[(String, String)] = Nil
-      ): F[Seq[io.flow.github.v0.models.UserOrg]] = {
+      )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.UserOrg]] = {
         val urlPath = Seq("user", "orgs")
 
         val queryParameters = Seq(
@@ -2063,7 +2103,7 @@ import io.circe.syntax._
 
     def modifyRequest(request: org.http4s.Request[F]): org.http4s.Request[F] = request
 
-    implicit def circeJsonEncoder[F[_]: Sync, A](implicit encoder: io.circe.Encoder[A]) = org.http4s.circe.jsonEncoderOf[F, A]
+    implicit def circeJsonEncoder[A](implicit encoder: io.circe.Encoder[A], ev: Sync[F]) = org.http4s.circe.jsonEncoderOf[F, A]
 
     def _executeRequest[T, U](
       method: String,
@@ -2113,15 +2153,18 @@ import io.circe.syntax._
 
   object Client {
     import cats.effect._
+    import models.json._
+    import org.http4s.EntityDecoder
+    import org.http4s.DecodeFailure
 
-    implicit def circeJsonDecoder[F[_]: Sync, A](implicit decoder: io.circe.Decoder[A]) = org.http4s.circe.jsonOf[F, A]
+    implicit def circeJsonDecoder[F[_]: Concurrent, A](implicit decoder: io.circe.Decoder[A]): EntityDecoder[F, A] = org.http4s.circe.jsonOf[F, A]
 
-    def parseJson[F[_]: Sync, T](
+    def parseJson[F[_]: Concurrent, T](
       className: String,
       r: org.http4s.Response[F]
-    )(implicit decoder: io.circe.Decoder[T]): F[T] = r.attemptAs[T].value.flatMap {
-      case Right(value) => Sync[F].pure(value)
-      case Left(error) => Sync[F].raiseError(new io.flow.github.v0.errors.FailedRequest(r.status.code, s"Invalid json for class[" + className + "]", None, error))
+    )(implicit entityDecoder: EntityDecoder[F, T]): F[T] = r.attemptAs[T].value.flatMap {
+      case Right(value) => Concurrent[F].pure(value)
+      case Left(error: DecodeFailure) => Concurrent[F].raiseError(new io.flow.github.v0.errors.FailedRequest(r.status.code, s"Invalid json for class[" + className + "]", None, error))
     }
   }
 
@@ -2155,14 +2198,14 @@ import io.circe.syntax._
       repo: String,
       sha: String,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Blob]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Blob]
 
     def post(
       owner: String,
       repo: String,
       blobForm: io.flow.github.v0.models.BlobForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.BlobCreated]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.BlobCreated]
   }
 
   trait Commits[F[_]] {
@@ -2171,14 +2214,14 @@ import io.circe.syntax._
       repo: String,
       sha: String,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Commit]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Commit]
 
     def post(
       owner: String,
       repo: String,
       commitForm: io.flow.github.v0.models.CommitForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.CommitResponse]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.CommitResponse]
   }
 
   trait Contents[F[_]] {
@@ -2187,7 +2230,7 @@ import io.circe.syntax._
       repo: String,
       ref: String = "main",
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Contents]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Contents]
 
     def getContentsByPath(
       owner: String,
@@ -2195,7 +2238,7 @@ import io.circe.syntax._
       path: String,
       ref: String = "main",
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Contents]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Contents]
   }
 
   trait Hooks[F[_]] {
@@ -2203,28 +2246,28 @@ import io.circe.syntax._
       owner: String,
       repo: String,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.Hook]]
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.Hook]]
 
     def getById(
       owner: String,
       repo: String,
       id: Long,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Hook]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Hook]
 
     def post(
       owner: String,
       repo: String,
       hookForm: io.flow.github.v0.models.HookForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Hook]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Hook]
 
     def deleteById(
       owner: String,
       repo: String,
       id: Long,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Unit]
+    )(implicit ev: Concurrent[F]): F[Unit]
   }
 
   trait PullRequests[F[_]] {
@@ -2233,14 +2276,14 @@ import io.circe.syntax._
       repo: String,
       pullRequestForm: io.flow.github.v0.models.PullRequestForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.PullRequest]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.PullRequest]
 
     def get(
       owner: String,
       repo: String,
       page: Long = 1L,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.PullRequest]]
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.PullRequest]]
   }
 
   trait Refs[F[_]] {
@@ -2248,21 +2291,21 @@ import io.circe.syntax._
       owner: String,
       repo: String,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.Ref]]
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.Ref]]
 
     def getByRef(
       owner: String,
       repo: String,
       ref: String,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Ref]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Ref]
 
     def post(
       owner: String,
       repo: String,
       refForm: io.flow.github.v0.models.RefForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Ref]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Ref]
 
     def putByRef(
       owner: String,
@@ -2270,7 +2313,7 @@ import io.circe.syntax._
       ref: String,
       refUpdateForm: io.flow.github.v0.models.RefUpdateForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Ref]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Ref]
   }
 
   trait Repositories[F[_]] {
@@ -2282,7 +2325,7 @@ import io.circe.syntax._
       sort: String = "full_name",
       direction: String = "asc",
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.Repository]]
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.Repository]]
 
     /**
      * List public repositories for the specified user.
@@ -2294,7 +2337,7 @@ import io.circe.syntax._
       sort: String = "full_name",
       direction: String = "asc",
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.Repository]]
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.Repository]]
 
     /**
      * List repositories for the specified org.
@@ -2306,7 +2349,7 @@ import io.circe.syntax._
       sort: String = "full_name",
       direction: String = "asc",
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.Repository]]
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.Repository]]
   }
 
   trait Tags[F[_]] {
@@ -2316,21 +2359,21 @@ import io.circe.syntax._
       page: Long = 1L,
       perPage: Long = 30L,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.TagSummary]]
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.TagSummary]]
 
     def getTagsBySha(
       owner: String,
       repo: String,
       sha: String,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Tag]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Tag]
 
     def postGitAndTags(
       owner: String,
       repo: String,
       tagForm: io.flow.github.v0.models.TagForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Tag]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Tag]
   }
 
   trait Trees[F[_]] {
@@ -2339,25 +2382,25 @@ import io.circe.syntax._
       repo: String,
       createTreeForm: io.flow.github.v0.models.CreateTreeForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.CreateTreeResponse]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.CreateTreeResponse]
   }
 
   trait UserEmails[F[_]] {
     def get(
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.UserEmail]]
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.UserEmail]]
   }
 
   trait Users[F[_]] {
     def getUser(
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.User]
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.User]
 
     def getUserAndOrgs(
       page: Long = 1L,
       perPage: _root_.scala.Option[Long] = None,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.UserOrg]]
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.UserOrg]]
   }
 
   package errors {

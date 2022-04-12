@@ -3,6 +3,6 @@ code:
     github:
       version: 0.2.53
       generators:
-        - generator: http4s_0_22
+        - generator: http4s_0_23
           files:
             - '*Client.scala'

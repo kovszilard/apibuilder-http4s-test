@@ -5,6 +5,8 @@
  */
 package io.flow.github.v0.mock
 
+import cats.effect.kernel.Concurrent
+
 class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client[F] {
 
     val baseUrl: org.http4s.Uri = org.http4s.Uri.unsafeFromString("http://mock.localhost")
@@ -30,7 +32,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       repo: String,
       sha: String,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Blob] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Blob] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makeBlob()
     }
 
@@ -39,7 +41,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       repo: String,
       blobForm: io.flow.github.v0.models.BlobForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.BlobCreated] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.BlobCreated] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makeBlobCreated()
     }
 
@@ -52,7 +54,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       repo: String,
       sha: String,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Commit] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Commit] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makeCommit()
     }
 
@@ -61,7 +63,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       repo: String,
       commitForm: io.flow.github.v0.models.CommitForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.CommitResponse] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.CommitResponse] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makeCommitResponse()
     }
 
@@ -74,7 +76,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       repo: String,
       ref: String = "main",
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Contents] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Contents] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makeContents()
     }
 
@@ -84,7 +86,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       path: String,
       ref: String = "main",
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Contents] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Contents] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makeContents()
     }
 
@@ -96,7 +98,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       owner: String,
       repo: String,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.Hook]] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.Hook]] = cats.Applicative[F].pure {
       Nil
     }
 
@@ -105,7 +107,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       repo: String,
       id: Long,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Hook] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Hook] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makeHook()
     }
 
@@ -114,7 +116,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       repo: String,
       hookForm: io.flow.github.v0.models.HookForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Hook] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Hook] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makeHook()
     }
 
@@ -123,7 +125,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       repo: String,
       id: Long,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Unit] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[Unit] = cats.Applicative[F].pure {
       // unit type
     }
 
@@ -136,7 +138,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       repo: String,
       pullRequestForm: io.flow.github.v0.models.PullRequestForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.PullRequest] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.PullRequest] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makePullRequest()
     }
 
@@ -145,7 +147,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       repo: String,
       page: Long = 1L,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.PullRequest]] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.PullRequest]] = cats.Applicative[F].pure {
       Nil
     }
 
@@ -157,7 +159,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       owner: String,
       repo: String,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.Ref]] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.Ref]] = cats.Applicative[F].pure {
       Nil
     }
 
@@ -166,7 +168,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       repo: String,
       ref: String,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Ref] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Ref] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makeRef()
     }
 
@@ -175,7 +177,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       repo: String,
       refForm: io.flow.github.v0.models.RefForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Ref] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Ref] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makeRef()
     }
 
@@ -185,7 +187,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       ref: String,
       refUpdateForm: io.flow.github.v0.models.RefUpdateForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Ref] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Ref] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makeRef()
     }
 
@@ -201,7 +203,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       sort: String = "full_name",
       direction: String = "asc",
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.Repository]] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.Repository]] = cats.Applicative[F].pure {
       Nil
     }
 
@@ -215,7 +217,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       sort: String = "full_name",
       direction: String = "asc",
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.Repository]] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.Repository]] = cats.Applicative[F].pure {
       Nil
     }
 
@@ -229,7 +231,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       sort: String = "full_name",
       direction: String = "asc",
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.Repository]] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.Repository]] = cats.Applicative[F].pure {
       Nil
     }
 
@@ -243,7 +245,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       page: Long = 1L,
       perPage: Long = 30L,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.TagSummary]] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.TagSummary]] = cats.Applicative[F].pure {
       Nil
     }
 
@@ -252,7 +254,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       repo: String,
       sha: String,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Tag] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Tag] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makeTag()
     }
 
@@ -261,7 +263,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       repo: String,
       tagForm: io.flow.github.v0.models.TagForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.Tag] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.Tag] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makeTag()
     }
 
@@ -274,7 +276,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       repo: String,
       createTreeForm: io.flow.github.v0.models.CreateTreeForm,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.CreateTreeResponse] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.CreateTreeResponse] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makeCreateTreeResponse()
     }
 
@@ -284,7 +286,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
 
     def getUser(
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[io.flow.github.v0.models.User] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[io.flow.github.v0.models.User] = cats.Applicative[F].pure {
       io.flow.github.v0.mock.Factories.makeUser()
     }
 
@@ -292,7 +294,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
       page: Long = 1L,
       perPage: _root_.scala.Option[Long] = None,
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.UserOrg]] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.UserOrg]] = cats.Applicative[F].pure {
       Nil
     }
 
@@ -302,7 +304,7 @@ class Client[F[_]: cats.Applicative] extends io.flow.github.v0.interfaces.Client
 
     def get(
       requestHeaders: Seq[(String, String)] = Nil
-    ): F[Seq[io.flow.github.v0.models.UserEmail]] = cats.Applicative[F].pure {
+    )(implicit ev: Concurrent[F]): F[Seq[io.flow.github.v0.models.UserEmail]] = cats.Applicative[F].pure {
       Nil
     }
 
